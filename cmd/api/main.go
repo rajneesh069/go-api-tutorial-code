@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rajneesh069/go-api-tutorial-code/internal/config"
 	"github.com/rajneesh069/go-api-tutorial-code/internal/database"
+	"github.com/rajneesh069/go-api-tutorial-code/internal/handlers"
 )
 
 func main() {
@@ -36,5 +37,8 @@ func main() {
 		})
 	})
 
+	router.POST("/todos", handlers.CreateTodoHandler(pool))
+
 	router.Run(":" + cfg.Port)
+
 }
