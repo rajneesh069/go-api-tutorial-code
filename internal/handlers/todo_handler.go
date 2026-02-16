@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rajneesh069/go-api-tutorial-code/internal/repository"
 )
@@ -31,5 +34,128 @@ func CreateTodoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusCreated, todo)
+	}
+}
+
+func GetAllTodosHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		todos, err := repository.GetAllTodos(c.Request.Context(), pool)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, todos)
+	}
+}
+
+func GetTodoByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil || id < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Todo ID"})
+			return
+		}
+
+		todo, err := repository.GetTodoByID(c.Request.Context(), pool, uint(id))
+
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, todo)
+	}
+}
+
+type UpdateTodoInput struct {
+	Title     *string `json:"title"`
+	Completed *bool   `json:"completed"`
+}
+
+func UpdateTodoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("id")
+		input := UpdateTodoInput{}
+		id, err := strconv.Atoi(idStr)
+		if err != nil || id < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Todo ID"})
+			return
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Input"})
+			return
+		}
+
+		if input.Title == nil && input.Completed == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Atleast one field either title or completed should be provided"})
+			return
+		}
+
+		existing, err := repository.GetTodoByID(c, pool, uint(id))
+
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		title, completed := existing.Title, existing.Completed
+
+		if input.Title != nil {
+			title = *input.Title
+		}
+
+		if input.Completed != nil {
+			completed = *input.Completed
+		}
+
+		todo, err := repository.UpdateTodo(c.Request.Context(), pool, uint(id), title, completed)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				fmt.Println(err)
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, todo)
+	}
+}
+
+func DeleteTodoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("id")
+
+		id, err := strconv.Atoi(idStr)
+		if err != nil || id < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo ID"})
+			return
+		}
+
+		err = repository.DeleteTodo(c.Request.Context(), pool, uint(id))
+
+		if err != nil {
+			if err.Error() == "TODO_NOT_FOUND" {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+				return
+			}
+
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Todo deleted successfully"})
 	}
 }
