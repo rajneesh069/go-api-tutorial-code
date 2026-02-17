@@ -79,7 +79,7 @@ func GetAllTodos(ctx context.Context, pool *pgxpool.Pool) ([]models.Todo, error)
 }
 
 func GetTodoByID(ctx context.Context, pool *pgxpool.Pool, id uint) (*models.Todo, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	todo := models.Todo{}
 	query := `
@@ -105,7 +105,7 @@ func GetTodoByID(ctx context.Context, pool *pgxpool.Pool, id uint) (*models.Todo
 }
 
 func UpdateTodo(ctx context.Context, pool *pgxpool.Pool, id uint, title string, completed bool) (*models.Todo, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	todo := models.Todo{}
 	query := `
@@ -131,7 +131,7 @@ func UpdateTodo(ctx context.Context, pool *pgxpool.Pool, id uint, title string, 
 }
 
 func DeleteTodo(ctx context.Context, pool *pgxpool.Pool, id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	query := `
