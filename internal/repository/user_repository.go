@@ -42,13 +42,14 @@ func GetUserByEmail(ctx context.Context, pool *pgxpool.Pool, email string) (*mod
 	user := models.User{}
 
 	query := `
-		SELECT id, email, created_at, updated_at
+		SELECT id, email, password, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`
 	err := pool.QueryRow(ctx, query, email).Scan(
 		&user.ID,
 		&user.Email,
+		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
