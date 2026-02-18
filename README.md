@@ -40,3 +40,4 @@ make migrateup
   - Database: todo_db
   - User: postgres
   - Password: mysecretpassword
+  - ssl_mode: disable (by default its prefer)
