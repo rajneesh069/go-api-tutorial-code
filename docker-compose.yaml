@@ -16,6 +16,16 @@ services:
       timeout: 5s
       retries: 5
 
+  pgadmin:
+    image: elestio/pgadmin:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_LISTEN_PORT: 8000
+    ports:
+      - "8000:8000"
+
   server:
     container_name: go-api-tutorial-server
     build:
