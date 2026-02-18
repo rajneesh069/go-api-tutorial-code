@@ -8,6 +8,7 @@ import (
 	"github.com/rajneesh069/go-api-tutorial-code/internal/config"
 	"github.com/rajneesh069/go-api-tutorial-code/internal/database"
 	"github.com/rajneesh069/go-api-tutorial-code/internal/handlers"
+	"github.com/rajneesh069/go-api-tutorial-code/internal/middleware"
 )
 
 func main() {
@@ -45,6 +46,7 @@ func main() {
 
 	router.POST("/auth/signup", handlers.CreateUserHandler(pool))
 	router.POST("/auth/signin", handlers.LoginUserHandler(pool, cfg))
+	router.GET("/protected-route-test", middleware.AuthMiddleware(cfg), handlers.ProtectedRoute())
 
 	router.Run(":" + cfg.Port)
 

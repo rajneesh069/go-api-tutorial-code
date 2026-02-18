@@ -113,3 +113,20 @@ func LoginUserHandler(pool *pgxpool.Pool, cfg *config.Config) gin.HandlerFunc {
 		})
 	}
 }
+
+func ProtectedRoute() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "user ID not found"})
+			return
+		}
+		email, exists := c.Get("email")
+		if !exists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "user ID not found"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "Route accessible", "userID": userID.(string), "email": email.(string)})
+
+	}
+}
