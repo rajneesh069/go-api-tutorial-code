@@ -37,15 +37,17 @@ func main() {
 			"database": "connected",
 		})
 	})
-
-	router.GET("/todos", handlers.GetAllTodosHandler(pool))
-	router.GET("/todos/:id", handlers.GetTodoByIDHandler(pool))
-	router.POST("/todos", handlers.CreateTodoHandler(pool))
-	router.PUT("/todos/:id", handlers.UpdateTodoHandler(pool))
-	router.DELETE("/todos/:id", handlers.DeleteTodoHandler(pool))
-
 	router.POST("/auth/signup", handlers.CreateUserHandler(pool))
 	router.POST("/auth/signin", handlers.LoginUserHandler(pool, cfg))
+
+	protected := router.Group("/todos")
+	protected.Use(middleware.AuthMiddleware(cfg))
+	protected.GET("", handlers.GetAllTodosHandler(pool))
+	protected.GET("/:id", handlers.GetTodoByIDHandler(pool))
+	protected.POST("", handlers.CreateTodoHandler(pool))
+	protected.PUT("/:id", handlers.UpdateTodoHandler(pool))
+	protected.DELETE("/:id", handlers.DeleteTodoHandler(pool))
+
 	router.GET("/protected-route-test", middleware.AuthMiddleware(cfg), handlers.ProtectedRoute())
 
 	router.Run(":" + cfg.Port)
