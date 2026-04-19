@@ -41,7 +41,7 @@ func CreateUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 
-		createdUser, err := repository.CreateUser(c, pool, input.Email, string(hashedPassword))
+		createdUser, err := repository.CreateUser(c.Request.Context(), pool, input.Email, string(hashedPassword))
 
 		if err != nil {
 			if database.IsUniqueConstraintViolation(err) {
@@ -75,7 +75,7 @@ func LoginUserHandler(pool *pgxpool.Pool, cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repository.GetUserByEmail(c, pool, input.Email)
+		user, err := repository.GetUserByEmail(c.Request.Context(), pool, input.Email)
 
 		if err != nil {
 			if err == pgx.ErrNoRows {

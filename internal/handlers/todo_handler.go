@@ -122,7 +122,7 @@ func UpdateTodoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 
-		existing, err := repository.GetTodoByID(c, pool, uint(id), userId.(string))
+		existing, err := repository.GetTodoByID(c.Request.Context(), pool, uint(id), userId.(string))
 
 		if err != nil {
 			if err == pgx.ErrNoRows {
